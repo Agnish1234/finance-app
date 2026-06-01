@@ -8,8 +8,9 @@ from config import Config
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
-login_manager.login_view = 'login'  # where to redirect if not logged in
+login_manager.login_view = 'main.login'  # where to redirect if not logged in
 login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
 
 def create_app(config_class=Config):
     """Application factory: creates and configures the Flask app."""
