@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Your Dashboard</h2>
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5>Total Income</h5>
+                <h3>${{ "%.2f"|format(total_income) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5>Total Expense</h5>
+                <h3>${{ "%.2f"|format(total_expense) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5>Balance</h5>
+                <h3>${{ "%.2f"|format(balance) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Add Transaction</div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-2">{{ form.amount(class="form-control", placeholder="Amount") }}</div>
+                    <div class="mb-2">{{ form.category(class="form-select") }}</div>
+                    <div class="mb-2">{{ form.type(class="form-select") }}</div>
+                    <div class="mb-2">{{ form.date(class="form-control", type="date") }}</div>
+                    <div class="mb-2">{{ form.description(class="form-control", placeholder="Description (optional)") }}</div>
+                    {{ form.submit(class="btn btn-primary w-100") }}
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">Recent Transactions</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transactions[:10] %}
+                        <tr>
+                            <td>{{ t.date }}</td>
+                            <td>{{ t.type }}</td>
+                            <td>{{ t.category }}</td>
+                            <td class="{% if t.type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                ${{ "%.2f"|format(t.amount) }}
+                            </td>
+                            <td>{{ t.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{{ url_for('main.export_csv') }}" class="btn btn-sm btn-secondary">Export CSV</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">Net Balance Trend (Last 30 Days)</div>
+            <div class="card-body">
+                <canvas id="balanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('balanceChart').getContext('2d');
+    const chartData = {{ chart_data|tojson }};
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Daily Net Balance',
+                data: chartData.values,
+                borderColor: 'blue',
+                fill: false
+            }]
+        }
+    });
+</script>
+{% endblock %}
